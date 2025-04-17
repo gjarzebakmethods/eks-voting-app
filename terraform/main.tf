@@ -26,10 +26,10 @@ module "vpc" {
   public_subnets  = slice(var.public_subnet_cidrs, 0, 2)
 
   # Minimal NAT gateway configuration
-  enable_nat_gateway     = true
-  single_nat_gateway     = true
-  enable_dns_hostnames   = true
-  enable_dns_support     = true
+  enable_nat_gateway   = true
+  single_nat_gateway   = true
+  enable_dns_hostnames = true
+  enable_dns_support   = true
 
   tags = {
     Terraform   = "true"
@@ -59,10 +59,10 @@ module "eks" {
       # Use t3.small instead of t3.medium for lower costs
       instance_types = [var.node_instance_type]
       capacity_type  = var.enable_spot_instances ? "SPOT" : "ON_DEMAND"
-      
+
       # Spot instance configuration
       spot_allocation_strategy = var.spot_allocation_strategy
-      
+
       # Minimal node configuration
       labels = {
         Environment = var.environment
