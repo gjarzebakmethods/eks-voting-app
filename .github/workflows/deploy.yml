@@ -1,6 +1,8 @@
 name: 'Terraform'
 
 on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
     inputs:
       tfvars_file:
@@ -9,13 +11,13 @@ on:
         default: 'terraform.tfvars'
       action:
         type: choice
-        description: 'Apply or Destroy'
+        description: 'Terraform Action'
         options:
         - plan
         - apply
         - destroy
         required: true
-        default: 'apply'
+        default: 'plan'
 
 permissions:
   contents: read
@@ -36,7 +38,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4
+      uses: aws-actions/configure-aws-credentials@v2
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -47,17 +49,19 @@ jobs:
       with:
         terraform_version: 1.9.3
 
-    - name: Terraform Init
-      run: terraform init
+    - name: Initialize Terraform
+      run: terraform init -upgrade
 
     - name: Terraform Plan
-      if: ${{ github.event.inputs.action == 'plan' }}
-      run: terraform plan -var-file=${{ github.event.inputs.tfvars_file }} -input=false
+      run: terraform plan -var-file=${{ github.event.inputs.tfvars_file }} -out=tfplan
+
+    - name: List Files (Debug)
+      run: ls -la
 
     - name: Terraform Apply
-      if: ${{ github.event.inputs.action == 'apply' }}
-      run: terraform apply -auto-approve -var-file=${{ github.event.inputs.tfvars_file }} -input=false
+      if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply'
+      run: terraform apply -auto-approve tfplan
 
     - name: Terraform Destroy
-      if: ${{ github.event.inputs.action == 'destroy' }}
-      run: terraform destroy -auto-approve -var-file=${{ github.event.inputs.tfvars_file }} -input=false
+      if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy'
+      run: terraform destroy -auto-approve -var-file=${{ github.event.inputs.tfvars_file }}
