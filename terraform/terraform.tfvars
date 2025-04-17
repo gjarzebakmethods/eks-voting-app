@@ -1,0 +1,6 @@
+aws_region = "eu-west-2"
+environment = "production"
+vpc_name = "voting-app-vpc"
+vpc_cidr = "10.0.0.0/16"
+cluster_name = "voting-app-eks"
+kubernetes_version = "1.27" 
